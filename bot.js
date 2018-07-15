@@ -5,7 +5,7 @@ var irc = require('irc');
 
 
 
-var client = new irc.Client("irc.systemnet.info", 'stray_cat', {
+var client = new irc.Client("irc.rizon.net", 'stray_cat', {
 
                 port: 6667,
 
@@ -352,7 +352,7 @@ var client = new irc.Client("irc.systemnet.info", 'stray_cat', {
 
 
 
-                if (from.toLowerCase() == "nyanko" && message.split(" ")[0] == ".stray_cat") {
+                if (from.toLowerCase() == "nyankochan" && message.split(" ")[0] == ".stray_cat") {
 
                     var msg = message.match(/\s(.+?$)/) != null ? message.match(/\s(.+?$)/)[1] : "";
 

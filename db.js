@@ -1,141 +1,130 @@
-var Sequelize = require('sequelize');
+require('dotenv').config();
 
-var sequelize = new Sequelize('stray_cat', 'bludot', process.env.PASSWORD, {
-    host: 'localhost',
-    dialect: 'mysql'
-})
+console.log(process.env.PASSWORD);
+const Sequelize = require('sequelize');
 
-
-
-var Promise = require('bluebird');
-var bcrypt = Promise.promisifyAll(require('bcrypt'));
-
+const sequelize = new Sequelize('stray_cat', 'root', process.env.PASSWORD, {
+    host: '127.0.0.1',
+    port: '3306',
+    dialect: 'mysql',
+});
 
 
-var User = sequelize.define('user', {
+const Promise = require('bluebird');
+const bcrypt = Promise.promisifyAll(require('bcrypt'));
+
+
+const User = sequelize.define('user', {
     username: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
     },
     email: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
     },
     password: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
     },
     channels: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
     },
     nick: {
-        type: Sequelize.STRING
-    }
+        type: Sequelize.STRING,
+    },
 });
 
 
-var cats = sequelize.define('cats', {
+const cats = sequelize.define('cats', {
     name: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
     },
     type: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
     },
     sounds: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
     },
-    "catch": {
-        type: Sequelize.STRING
+    catch: {
+        type: Sequelize.STRING,
     },
     msgs: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
     },
     responses: {
-        type: Sequelize.STRING
-    }
+        type: Sequelize.STRING,
+    },
 });
 
-var ignore = sequelize.define('ignore', {
-	channel: {
-		type: Sequelize.STRING
-	},
-	nick: {
-		type: Sequelize.STRING
-	},
-	net: {
-		type: Sequelize.STRING
-	}
+const ignore = sequelize.define('ignore', {
+    channel: {
+        type: Sequelize.STRING,
+    },
+    nick: {
+        type: Sequelize.STRING,
+    },
+    net: {
+        type: Sequelize.STRING,
+    },
 });
 
-var resps = sequelize.define('resp', {
+const resps = sequelize.define('resp', {
     name: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
     },
     type: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
     },
-    "catch": {
-        type: Sequelize.STRING
+    catch: {
+        type: Sequelize.STRING,
     },
     msgs: {
-        type: Sequelize.STRING
-    }
+        type: Sequelize.STRING,
+    },
 });
 
 module.exports = {
 
-    login: function(email, password) {
-        return User.findOne({'where': {'email': email}}).then(function(user) {
+    login(email, password) {
+        return User.findOne({ where: { email } }).then((user) => {
             console.log(user.password);
-            return bcrypt.compareAsync(password, user.password).then(function(tmp) {
-                    console.log(tmp);
-                    if(tmp) {
-                      return user;
-                    } else {
-                      return false;
-                    }
-                });
+            return bcrypt.compareAsync(password, user.password).then((tmp) => {
+                console.log(tmp);
+                if (tmp) {
+                    return user;
+                }
+                return false;
+            });
         });
     },
-    getCat: function(cat) {
-        return cats.findOne({'where': {'name': cat}}).then(function(cat) {
-            if(!cat) {
-                return cats.findOne({'name': 'generic'}).then(function(cat) {
-                    return cat.toJSON();
-                });
-            } else {
-                return cat.toJSON();
+    getCat(cat) {
+        return cats.findOne({ where: { name: cat } }).then((cat) => {
+            if (!cat) {
+                return cats.findOne({ name: 'generic' }).then(cat => cat.toJSON());
             }
-        })
+            return cat.toJSON();
+        });
     },
-	ignore: {
-		add: function(client, channel, message) {
-			//client.net
-			return ignore.create({nick: message.split(" ")[3], net: client.net, channel: channel}).then(function(res) {
-				return true;
-			});
-		},
-		remove: function(client, channel, message) {
-			return ignore.findOne({where: {nick: message.split(" ")[3], channel: channel, net: client.net}}).then(function(res) {
-				return res.destroy();
-			});
-		},
-		get: function(net) {
-			return ignore.findAll({net: net}).then(function(res) {
-				return res;
-			});
-		}
-	},
-    getResp: function(name) {
-        return resps.findOne({'where': {'name': name}}).then(function(resp) {
-            if(!resp) {
+    ignore: {
+        add(client, channel, message) {
+            // client.net
+            return ignore.create({ nick: message.split(' ')[3], net: client.net, channel }).then(res => true);
+        },
+        remove(client, channel, message) {
+            return ignore.findOne({ where: { nick: message.split(' ')[3], channel, net: client.net } }).then(res => res.destroy());
+        },
+        get(net) {
+            return ignore.findAll({ net }).then(res => res);
+        },
+    },
+    getResp(name) {
+        return resps.findOne({ where: { name } }).then((resp) => {
+            if (!resp) {
                 return null;
-            } else {
-                return resp.toJSON();
             }
-        })
-    }
+            return resp.toJSON();
+        });
+    },
 
 
+    // login("admin@bludotos.com", "@pfelor@nge1!");
 
-
-    //login("admin@bludotos.com", "@pfelor@nge1!");
-
-}
+};
